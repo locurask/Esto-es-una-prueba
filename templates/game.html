@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block extra_headers %}
+ <script src='/_ah/channel/jsapi'></script>
+{% endblock %}
+
+{% block content %}
+	
+<h1>Hola '{{player|escape}}' estas en el mapa '{{mapa}}'</h1>
+
+<div style="border:1px solid #cccccc;margin-bottom: 4px; padding:4px;">
+<label for="id_modificarvelocidad">Velocidad</label>
+<input style="margin-top:5px" id="id_modificarvelocidad" type="range"  min="0" max="3000" value="1500" onchange="modificarVelocidad(this.value)"/>
+<span id="id_mostrar_velocidad">1500</span>
+</div>
+
+<div id="dibujo" style=""></div>
+
+<div id="msgbox-div">
+	 <ul id='msgbox'></ul>
+</div>
+
+<form onsubmit="return enviarMensaje();">
+	<input type="text" name="mensaje" id="input_mensaje">
+</form>
+<a href="/game/myplayer/" >My Player</a>
+
+<script type="text/javascript">
+
+	//machete http://raphaeljs.com/bounce.html
+
+	var circle;
+	var paper;
+	var velocidad = 1500;
+	var color_alianza = "#514BEB";
+	var color_orda = "#FF2222";
+	var jugadores = {};
+	var myplayerid = {{player.key.id}};
+	var text_time_out = 10000;
+
+	var channel_id = '{{channel_id}}';
+	var channel = new goog.appengine.Channel(channel_id);
+	var socket = channel.open();
+	
+	socket.onmessage = function(evt){
+		
+		var obj = jQuery.parseJSON(evt.data);
+		if(obj.type == "move"){
+			jugador = jugadores[obj.player_id];
+			jugador.pos_x = obj.pos_x;
+			jugador.pos_y = obj.pos_y;
+			jugador.circle.animate({cx: obj.pos_x, cy: obj.pos_y}, velocidad, "<>");
+			return;
+		}
+
+		if(obj.type == "msg" && obj.player_id != myplayerid){
+			mostrarMensaje(obj.player_id,obj.msg);
+			return;
+		}
+		
+	};
+
+	function enviarMensaje(){
+		
+		var input = document.getElementById('input_mensaje');
+		$.post('/game/send_msg/{{mapa.key.id}}/', {msg: input.value},
+				function(data){
+					mostrarMensaje(myplayerid,input.value);
+					input.value='';
+		});
+
+		return false;
+		
+	}
+	
+	function mostrarMensaje(player_id, msg){
+		var jugador = jugadores[player_id];
+		limpiarTexto(jugador);
+		jugador.texto = paper.text(jugador.pos_x, jugador.pos_y - 20, msg); 
+		jugador.texto.attr("fill","#000");
+		jugador.texto.attr("font-size","14px");
+		jugador.texto.attr("text-anchor","start");
+		setTimeout(function(){jugador.texto.remove();},text_time_out);
+	}
+	
+	function limpiarTexto(jugador){
+		if (jugador.texto){ jugador.texto.remove();}
+	}
+	
+	$(document).ready(function(){
+		
+		dibujarMapa();
+		dibujarJugadores();
+		
+	})
+	
+	
+	function dibujarJugadores(){
+			
+		$.getJSON('/game/get_players_map/{{mapa.key.id}}/', function(json) {
+			   for ( i=0; i<json.length; i++){
+						j = jugadores[json[i].player_id] = json[i];
+						j.circle = paper.circle(j.pos_x, j.pos_y, 10);
+						if (j.tipo == "Alianza"){
+							j.circle.attr("fill",color_alianza );
+						}else{
+							j.circle.attr("fill",color_orda );
+						}
+						j.circle.attr("stroke", "#fff");
+						j.circle.attr("id", j.player_id);
+				}
+		});
+		
+	}
+	
+	
+	function dibujarMapa() { 
+		paper = Raphael("dibujo", 898, 400);
+		paper.canvas.style.cssText = "background-color:#efefef;border:1px solid #cccccc;";
+
+		 $(paper.canvas).click(function(e){
+				j = jugadores[myplayerid];
+				
+			 	//MALDITO EVENTO!..
+				j.pos_y =  e.pageY - e.currentTarget.parentNode.parentNode.offsetTop - e.currentTarget.parentNode.offsetTop;
+				j.pos_x = e.pageX - e.currentTarget.parentNode.offsetLeft - e.currentTarget.parentNode.parentNode.offsetLeft;
+
+				$.ajax({
+					 type: 'POST',
+					  url: '/game/player_update_pos/{{mapa.key.id}}/'+j.pos_x+'/'+j.pos_y+'/',
+					  success: function(data) {
+						  limpiarTexto(j);
+						  j.circle.animate({cx: j.pos_x, cy: j.pos_y}, velocidad, "<>");
+					  }
+					});
+				
+				
+	 	  });
+
+		
+				
+	}//fin dibujar mapa
+
+	function modificarVelocidad(valor){
+		velocidad = valor;
+		$('#id_mostrar_velocidad').html(valor);
+	}
+
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+application: estoesunaprueba
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /medios
+  static_dir: medios
+- url: /game/.*
+  script: game.py
+- url: /.*
+  script: index.py
+  
+
+ 

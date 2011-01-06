@@ -1,0 +1,75 @@
+<!DOCTYPE>
+<html>
+	<head>
+	  	<meta charset="utf-8">  
+		<title>Esto es una prueba - {{titulo}}</title>
+		<link rel="stylesheet" type="text/css" href="/medios/css/style.css">
+		<script type="text/javascript" src="/medios/js/jquery-1.4.4.min.js"></script>
+		<script type="text/javascript" src="/medios/js/raphael-min.js"></script>
+		
+		<link rel="shortcut icon" href="/medios/img/favicon.ico" type="image/x-icon">
+		<link rel="icon" href="/medios/img/favicon.ico" type="image/x-icon">
+		{% block extra_headers %}{% endblock %}
+	</head>
+	<body {% block thebody %}{% endblock %}>
+	
+	
+	<div id="page">
+		
+		<div id="hd">
+			<nav>
+				<ul>
+					<li><a href="/">Inicio</a></li>
+					<li><a href="/game/">Game</a></li>
+					<li><a href="/about/">About</a></li>
+				</ul>
+			</nav>
+			
+			<img style="float:left; margin:5px 20px;" src="/medios/img/Prymatex_Logo.png" alt="Prymatex">
+			<h1>Esto es una prueba</h1>
+			
+		</div>
+		<div style="clear: both;"></div>
+		<br>
+		<div id="bd">
+			<a  style="float:right;margin-right:10px;margin-top:15px;" href="javascript:void(0);" onclick="return ocultar_header(this)">Ocultar Header</a>
+			{% block content %}{% endblock %}
+		</div>
+		<div id="ft"></div>
+	
+	</div>
+	
+	<script type="text/javascript">
+		var oculto = false;
+		
+		function ocultar_header(element){
+			
+			if(oculto){
+				$("#bd").animate({
+					bottom: "0", "opacity":1
+				}, 500, function(){
+					$('#hd').slideToggle('slow', function() {
+						oculto = (oculto)?false:true;
+					});
+				})
+				element.innerHTML = "Ocultar Header";
+				
+			}else{
+			$('#hd').slideToggle('slow', function() {
+				oculto = (oculto)?false:true;	
+				if(oculto){
+					$("#bd").animate({
+						bottom: "100", "opacity":1
+					}, 500);
+					//$("#bd").css("margin-top","0px !important");
+				}
+			 });
+				element.innerHTML = "Mostrar Header";
+			}
+			
+		}
+	</script>
+	
+	</body>
+</html>
+

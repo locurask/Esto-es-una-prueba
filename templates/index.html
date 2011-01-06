@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+	{% if user %}	
+		<h1>Bienvenido {{user.nickname}} <a href="{{url}}">{{url_linktext}}</a></h1>
+	{% else %}
+		<h1>Bienvenido <a href="{{url}}">{{url_linktext}}</a></h1> 
+	{% endif %}
+	
+
+{% endblock %}
