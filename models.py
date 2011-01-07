@@ -95,8 +95,13 @@ class PlayerOnMap(db.Model):
             return playeronmap
         else:
             return results[0]
-            
-        
+    
+    @classmethod 
+    def delPlayerPosition(cls, mapa, player):
+        query = db.Query(PlayerOnMap)
+        query.filter("map =", mapa).filter("player =", player)
+        for p in query:
+            p.delete()
         
         
     @classmethod
