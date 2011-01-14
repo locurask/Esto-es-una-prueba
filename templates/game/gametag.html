@@ -1,0 +1,41 @@
+{% extends "../base.html" %}
+
+	{% block extra_headers %}
+	
+		<script src='/medios/js/gametag.js'></script>
+		
+		<style type="text/css">
+			#hd{ display:none;}
+			#bd{ margin-top: 0px !important;
+			}
+			
+			#the_paper{
+				scroll: auto;
+			}
+		</style>
+		
+	{% endblock %}
+	
+	
+	
+	{% block content %}
+	
+	
+	<div id="the_paper"></div>
+	
+	<form onsubmit="return agregarTag();">
+		<input type="text" name="input_tags" id="id_input_tags" style="width:100%;font-size:20px;border:1px solid pink; margin-top:4px;">
+	</form>
+	
+	<script type="text/javascript">
+	
+		$(document).ready(function(){
+			var it = document.getElementById('id_input_tags');
+			it.focus();
+			init_gametag();
+		});	
+	
+	</script>
+	
+	{% endblock %}
+	

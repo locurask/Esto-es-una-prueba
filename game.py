@@ -132,7 +132,13 @@ class Salir(webapp.RequestHandler):
         channel.send_message(mapa.name, simplejson.dumps(data))
         self.redirect('/')
         
+class GameTag(webapp.RequestHandler):
+    
+    def get(self):
+        values = {'titulo':'Game Tag'}
+        mostrar(self.response, "game/gametag.html",values)
         
+                
         
             
         
@@ -147,6 +153,7 @@ application = webapp.WSGIApplication(
                      ('/game/player_update_pos/(\d+)/(\d+)/(\d+)/', PlayerUpdatePos),
                      ('/game/send_msg/(\d+)/', SendMsg),
                      ('/game/salir/(\d+)/', Salir),
+                     ('/game/tag/', GameTag),
                     ],
                     
                     debug=True)
