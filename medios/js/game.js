@@ -1,5 +1,7 @@
 var color_alianza = "#514BEB";
 var color_orda = "#FF2222";
+var ANIMATE_TYPE = ">";
+var ANIMATE_SPEED = 1000;
 
 function Player(obj){
 	this.name = obj.player_name;
@@ -8,7 +10,7 @@ function Player(obj){
 	this.player_id = obj.player_id;
 	this.player_type = obj.player_type;
 	this.size = 10;
-	this.speed = 1500;
+	this.speed = ANIMATE_SPEED;
 	this.text_time_out = 5000;
 }
 
@@ -39,8 +41,8 @@ Player.prototype.move = function(x,y){
 	this.pos_x = x;
 	this.pos_y = y;
 	this.clean_msg_text();
-	this.circle.animate({cx: this.pos_x, cy: this.pos_y}, this.speed, "<>");
-	this.player_text_name.animateWith(this.circle, {x: this.pos_x, y: this.pos_y + this.size + 8}, this.speed, "<>");
+	this.circle.animate({cx: this.pos_x, cy: this.pos_y}, this.speed, ANIMATE_TYPE);
+	this.player_text_name.animateWith(this.circle, {x: this.pos_x, y: this.pos_y + this.size + 8}, this.speed, ANIMATE_TYPE);
 	
 }
 

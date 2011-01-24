@@ -135,7 +135,7 @@ class Salir(webapp.RequestHandler):
 class GameTag(webapp.RequestHandler):
     
     def get(self):
-        values = {'titulo':'Game Tag'}
+        values = {'titulo':'Game Tag','debug':True}
         mostrar(self.response, "game/gametag.html",values)
         
                 
@@ -155,7 +155,6 @@ application = webapp.WSGIApplication(
                      ('/game/salir/(\d+)/', Salir),
                      ('/game/tag/', GameTag),
                     ],
-                    
                     debug=True)
 
 

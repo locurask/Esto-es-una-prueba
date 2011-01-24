@@ -6,60 +6,78 @@
 /**
  * Un tag
  */
-
+var DEBUG = true;
 var tags = {};
 var relaciones= {};
 var MAX_X = 898;
 var MAX_Y = 400;
 var ANIMATION_TYPE = ">"
+var ANIMATION_SPEED = 2000;
+var ultimoTag = false;
 
+/**
+ * Tag Object
+ * @param obj
+ * @returns {Tag}
+ */
 function Tag(obj){
 	this.x = obj.x;
 	this.y = obj.y;
 	this.size = obj.size;
 	this.color = obj.color;
+	this.name = obj.name;
 	this.dibujar();
 }
 
 Tag.prototype.dibujar = function(){
+	
 	this.circle = paper.circle(this.x, this.y, this.size);
-	try{
-		//paper.attr({cx:this.x, cy:this.y});
-	}catch(e){
-		console.log(e)
-	}
 	this.circle.attr("fill", this.color );
+	this.text_name = paper.text(this.x, this.y, this.name);
+	this.text_name.attr("fill", "#000000");
+	this.text_name.attr("font-size", this.size+5);
+	this.text_name.attr("weight", "bold");
 	
 }
 
 
 Tag.prototype.aumentar = function(){
 	this.size += 1;
-	this.circle.animate({r: this.size}, 500);
+	this.circle.animate({r: this.size}, ANIMATION_SPEED);
+	this.text_name.attr("font-size", this.size+5);
+	
 }
 
 Tag.prototype.mover = function(mover_x, mover_y){
 	
 	this.x = this.x + mover_x;
 	this.y = this.y + mover_y;
-	this.circle.animate({cx:this.x, cy:this.y}, 1000, ANIMATION_TYPE);
+	this.circle.animate({cx:this.x, cy:this.y}, ANIMATION_SPEED, ANIMATION_TYPE);
+	this.text_name.animateWith(this.circle, {x: this.x, y: this.y}, ANIMATION_SPEED, ANIMATION_TYPE);
 }
 
 Tag.prototype.efectoUltimo = function(){
 	this.circle.animate({
-		"20%": {r: this.size+10},
-		"50%": {r: this.size+20},
-		"100%": {r: this.size},
+		"20%": {r: this.size+4, "fill": '#222222'},
+		"50%": {r: this.size+8, "fill": '#999999'},
+		"70%": {r: this.size+4, "fill": '#EEEEEE'},
+		"100%": {r: this.size, "fill": this.color},
 	}, 1000);
-	//this.circle.animate({r: this.size}, 1000);
 }
 
 
+
+/**
+ * RelacionTag 
+ * @param obj  objeto de configuracion
+ * @returns {RelacionTag}
+ */
 function RelacionTag(obj){
 	this.x1 = obj.x1;
 	this.x2 = obj.x2;
 	this.y1 = obj.y1;
 	this.y2 = obj.y2;
+	this.name = obj.name;
 	this.color = obj.color;
 	this.dibujar();
 }
@@ -75,31 +93,36 @@ RelacionTag.prototype.mover = function(mover_x, mover_y){
 	this.y1 = this.y1 + mover_y;
 	this.x2 = this.x2 + mover_x;
 	this.y2 = this.y2 + mover_y;
-	
 	this.new_path = {path: "M"+this.x1+" "+this.y1+"L"+this.x2+" "+this.y2}
-	//this.circle.translate(mover_x, mover_y);
-	this.path.animate(this.new_path, 1000, ANIMATION_TYPE);
+	this.path.animate(this.new_path, ANIMATION_SPEED, ANIMATION_TYPE);
 }
+
+
+/**
+ *  ////////////////////////////////////////////////////////////////////////
+ */
 
 
 function myRand(max){
-	//hasta 99
-	
 	var x = Math.floor(Math.random(1)*100) * Math.floor(Math.random(1)*10) 
-	while(x > max || x == 0){
+	while(x == 0){
 		var x = Math.floor(Math.random(1)*100) * Math.floor(Math.random(1)*10)
 	}
-	//console.log(x);
+	logear('RANDOM: '+x);
 	return x;
+	
 	
 }
 
-
+function espar(){
+	if( (Math.floor(Math.random(1)*10))%2 == 0 ) {
+		return true
+	}
+	return false
+}
 
 function init_gametag(){
-
 		dibujarPaper();
-		
 }
 
 function agregarTag(){
@@ -122,52 +145,59 @@ function agregarTag(){
 				tags[nombre].aumentar();
 				
 			}else{
+				
+				var x = 0
+				var y = 0;
+
+				if(espar())	x = (ultimoTag)? ultimoTag.x + myRand(MAX_X):myRand(MAX_X)
+				else x = (ultimoTag)? ultimoTag.x - myRand(MAX_X):myRand(MAX_X)
+
+				if(espar())	y = (ultimoTag)? ultimoTag.y + myRand(MAX_Y):myRand(MAX_Y);
+				else y = (ultimoTag)? ultimoTag.y - myRand(MAX_Y):myRand(MAX_Y);
 				oconf = {
-						'x': myRand(MAX_X),
-						'y': myRand(MAX_Y),
-						'size': 5,
+						'x': x,
+						'y': y,
+						'size': 10,
 						'color': "#0095FF",
+						'name': nombre,
 				};
+				logear("oconf x: "+oconf.x);
 				tags[nombre] = new Tag(oconf);
 			}
 			
 			tag = tags[nombre];
-
+			tag.efectoUltimo();
+			
+			
 			try{
-				
 				var mover_x=0;
 				var mover_y=0;
 				
 				if(tag.x > MAX_X/2){
-					mover_x = -1 * (tag.x - MAX_X/2);
+					mover_x =  -1 * (tag.x - MAX_X/2);
 				}else{
 					mover_x = MAX_X/2 - tag.x;
-					
 				}
 				
 				if(tag.y > MAX_Y/2){
-					mover_y = -1 * (tag.y - MAX_Y/2);
+					mover_y = -1 *  (tag.y - MAX_Y/2);
 				}else{
 					mover_y =  MAX_Y/2 - tag.y;
 				}
 				
-				//console.log('x:'+tag.x+' y:'+tag.y+' MAX_X/2:'+MAX_X/2+' MAX_Y/2:'+MAX_Y/2);
-				//console.log(mover_x);
-				//console.log(mover_y);
+				logear('mover_x: '+mover_x+' mover_y: '+mover_y);
 				
 				for(key in tags){
 					tag = tags[key];
 					tag.mover(mover_x, mover_y)
 				}
+				
 				for(key in relaciones){
-					//relaciones[key].translate(mover_x, mover_y);
-					//relaciones[key].animate({cx:mover_x, cy:mover_y}, 1000, "bounce");
-					//paper.path(relaciones[key].getSubpath(10,10)).attr({stroke: "#f00"})
 					relaciones[key].mover(mover_x, mover_y);
 				}
-				//tags[nombre].circle.translate(mover_x,mover_y);
+
 			}catch(e){
-				console.log(e);
+				logear("ERROR: "+e)
 			}
 		}
 		
@@ -194,29 +224,70 @@ function agregarTag(){
 				}
 			}
 		}
-		
-		
-		//efecto ultimo
-		//efectoUltimo
-		tags[ nombres[nombres.length -1] ].efectoUltimo();
-		
+		ultimoTag = tags[ nombres[nombres.length -1] ];
 		return false;
 		
 }
 
-
-
-
-
 function linea(x1,y1, x2, y2){
-	//console.log("M"+x1+" "+y1+"L"+x2+" "+y2);
 	return paper.path("M"+x1+" "+y1+"L"+x2+" "+y2);
-	
-} 
+}
+
 function dibujarPaper(){
-		paper = Raphael("the_paper", MAX_X, MAX_Y);
-		paper.canvas.style.cssText = "background-color:#efefef;border:1px solid #cccccc;";
 		
+		the_paper = document.getElementById('the_paper');
+		
+		MAX_X = $('#the_paper').css('width').split('px')[0]/1
+		MAX_Y = $('#the_paper').css('height').split('px')[0]/1
+		paper = Raphael("the_paper", MAX_X, MAX_Y);
+		
+		
+		onkeydown = function(e){
+			mover = false;
+			MOVER_CANT = 100;
+			switch(e.keyIdentifier){
+				case "Up":{
+					//logear("ARRIBA");
+					mover_x = 0;
+					mover_y = +MOVER_CANT;
+					mover = true;
+				}break;
+				case "Left":{
+					//logear("IZQUIERDA");
+					mover_x = +MOVER_CANT;
+					mover_y = 0;
+					mover = true;
+				}break;
+				case "Right":{
+					//logear("DERECHA");
+					mover_x = -MOVER_CANT;
+					mover_y = 0;
+					mover = true;
+				}break;
+				case "Down":{
+					//logear("ABAJO");
+					mover_x = 0;
+					mover_y = -MOVER_CANT;
+					mover = true;
+				}break;
+			}
+			
+			if(mover){
+				AUX_SPEED = ANIMATION_SPEED;
+				ANIMATION_SPEED = 500;
+				for(key in tags){
+					tag = tags[key];
+					tag.mover(mover_x, mover_y);
+				}
+				for(key in relaciones){
+					relaciones[key].mover(mover_x, mover_y);
+				}
+				ANIMATION_SPEED = AUX_SPEED;
+			}
+		}//end onkeydown
+			
+		//paper.canvas.style.cssText = "background-color:#efefef;border:1px solid #cccccc;";
+		//paper.canvas.style.cssText = "background-color:#000000;";
 		
 		/*var p = paper.path("M10,50c0,50,80-50,80,0c0,50-80-50-80,0z");
 	    var path = p.getSubpath(10, 60);
@@ -241,14 +312,20 @@ function dibujarPaper(){
 			}
 		}
 		*/
-		
-		
-		
 }
 
 
 
 
 
-
+function logear(msg){
+	if (DEBUG){
+		var log = document.getElementById('log');
+		var p = document.createElement('p');
+		p.innerHTML = msg;
+		log.appendChild(p);
+		log.scrollByLines(10);
+	}
+	return;
+}
 

@@ -3,7 +3,18 @@
 {% block extra_headers %}
  <script src='/_ah/channel/jsapi'></script>
  <script src='/medios/js/game.js'></script>
- <script src='/medios/js/chat_spy.js'></script>
+ <style type="text/css">
+ 	#msgbox-div {
+ 		height: 100px;
+ 		overflow-y: scroll; 
+ 		border:1px solid #cccccc;
+ 		padding:4px;
+ 	}
+ 	#msgbox-div p {
+ 		border: 1px solid #cccccc;
+ 		padding:2px;
+ 	}
+ </style>
 {% endblock %}
 
 {% block content %}
@@ -12,23 +23,20 @@
 
 	<div style="border:1px solid #cccccc;margin-bottom: 4px; padding:4px;">
 		
-		
 		<a href="/game/myplayer/" > My Player </a> |
 		<a href="/game/salir/{{mapa.key.id}}/" > Salir del mapa </a>
-		
 					
 	</div>
 
 <div id="dibujo" style=""></div>
 
-<div id="msgbox-div">
-	 <ul id='msgbox'></ul>
-</div>
-
-
 <form onsubmit="return enviarMensaje();">
 	<input type="text" name="mensaje" id="input_mensaje" style="width:100%;font-size:20px;border:1px solid pink; margin-top:4px;">
 </form>
+<div id="msgbox-div">
+</div>
+
+
 
 <div id="spybox" style="width:100%;height:100px;overflow:auto;">
 <ul class="spy" id="elspy" >
@@ -41,7 +49,6 @@
 <script type="text/javascript">
 
 	//machete http://raphaeljs.com/bounce.html
-	var divScroll;
 	var circle;
 	var paper;
 	var velocidad = 1500;
@@ -99,14 +106,11 @@
 	
 	function mostrarMensaje(player, msg){
 		
-		eul = document.getElementById('elspy');
-		eli = document.createElement('li');
-		
-		eli.innerHTML = "<strong>"+player.name+"</strong>: "+msg;
-		eul.appendChild(eli);
-		
-		divScroll.activeScroll();
-		
+		ediv = document.getElementById('msgbox-div');
+		ep = document.createElement('p');
+		ep.innerHTML = "<strong>"+player.name+"</strong>: "+msg;
+		ediv.appendChild(ep);
+		ediv.scrollByLines(10);
 		return
 		
 		
@@ -128,19 +132,12 @@
 	
 	
 	$(document).ready(function(){
-		
-		
 		boton_ocultar_header = document.getElementById('boton_ocultar_header');
-		ocultar_header(boton_ocultar_header);
-		
-		
-		
+		//ocultar_header(boton_ocultar_header);
 		dibujarMapa();
 		dibujarJugadores();
 		focus_text_input();
-		
-		divScroll = new chatscroll.Pane('elspy'); 
-		
+		//divScroll = new chatscroll.Pane('elspy'); 
 	})
 	
 	
