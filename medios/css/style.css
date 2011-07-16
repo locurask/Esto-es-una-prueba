@@ -45,7 +45,7 @@ h1, h2{font-weight:normal;}
 	margin:-2px auto;
 	z-index: 1;
 	position: relative;
-	min-height: 200px;
+	/*min-height: 200px;*/
 	padding:10px; 
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
@@ -53,7 +53,7 @@ h1, h2{font-weight:normal;}
 	
 	-moz-box-shadow: 0px 2px 10px #555555;
 	-webkit-box-shadow: 0px 2px 10px #555555;
-	min-height: 900px;
+	/*min-height: 900px;*/
 }
 
 #ft{ height: 200px; }
@@ -85,6 +85,25 @@ nav ul ul a { padding:5px 10px; border-left:none; border-right:none; font-size:1
 nav ul ul a:hover { background-color:#555; }
 nav ul li:hover ul {display:inline;}
 
+
+
+.btn-big{
+	-moz-border-radius:5px 5px 5px 5px;
+	-webkit-border-radius:5px 5px 5px 5px;
+	border-radius:5px 5px 5px 5px;
+	background:url("../img/bg-btn-signup.png") repeat-x scroll 0 0 #FFAA22;
+	border:1px solid #FFAA22;
+	color:#333333;
+	font:bold 18px Arial,Sans-serif;
+	padding:8px 10px;
+	text-align:center;
+	text-decoration:none;
+	text-shadow:0 1px 0 #FFEE66;
+}
+
+
+.btn-big:hover,.btn-big:focus{background-position:0 -5px;color:#111;}
+.btn-big:active{background-image:none;}
 
 
 

@@ -8,12 +8,16 @@
  */
 var DEBUG = true;
 var tags = {};
+var tweets = {};
 var relaciones= {};
 var MAX_X = 898;
 var MAX_Y = 400;
 var ANIMATION_TYPE = ">"
 var ANIMATION_SPEED = 2000;
 var ultimoTag = false;
+var ultimoTweet = false;
+
+
 
 /**
  * Tag Object
@@ -99,6 +103,53 @@ RelacionTag.prototype.mover = function(mover_x, mover_y){
 
 
 /**
+ * Tweet Object
+ * @param obj
+ * @returns {Tag}
+ */
+function Tweet(obj){
+	this.x = obj.x;
+	this.y = obj.y;
+	this.size = obj.size;
+	this.image = obj.image;
+	this.name = obj.name;
+	this.dibujar();
+}
+
+Tweet.prototype.dibujar = function(){
+	this.image = paper.image(this.image, this.x, this.y, 50, 50);
+	this.text_name = paper.text(this.x, this.y+60, this.name);
+	this.text_name.attr("fill", "#000000");
+	this.text_name.attr("font-size", this.size);
+	this.text_name.attr("weight", "bold");
+	this.text_name.attr("text-anchor", "start");
+}
+
+
+Tweet.prototype.aumentar = function(){
+	this.size += 1;
+	//this.circle.animate({r: this.size}, ANIMATION_SPEED);
+	this.text_name.attr("font-size", this.size+5);
+}
+
+Tweet.prototype.mover = function(mover_x, mover_y){
+	this.x = this.x + mover_x;
+	this.y = this.y + mover_y;
+	this.image.animate({x: this.x, y: this.y}, ANIMATION_SPEED, ANIMATION_TYPE);
+	this.text_name.animateWith(this.image, {x: this.x, y: this.y+60}, ANIMATION_SPEED, ANIMATION_TYPE);
+}
+
+Tweet.prototype.efectoUltimo = function(){
+	/*this.circle.animate({
+		"20%": {r: this.size+4, "fill": '#222222'},
+		"50%": {r: this.size+8, "fill": '#999999'},
+		"70%": {r: this.size+4, "fill": '#EEEEEE'},
+		"100%": {r: this.size, "fill": this.color},
+	}, 1000);
+	*/
+	return;
+}
+/**
  *  ////////////////////////////////////////////////////////////////////////
  */
 
@@ -108,10 +159,8 @@ function myRand(max){
 	while(x == 0){
 		var x = Math.floor(Math.random(1)*100) * Math.floor(Math.random(1)*10)
 	}
-	logear('RANDOM: '+x);
+	//logear('RANDOM: '+x);
 	return x;
-	
-	
 }
 
 function espar(){
@@ -125,9 +174,67 @@ function init_gametag(){
 		dibujarPaper();
 }
 
-function agregarTag(){
+function agregarTweet(tweet){
+	
+	nombre = tweet.from_user;
+	
+	if (tweets[nombre]){
+		tweets[nombre].aumentar();
+	}else{
+		var x = 0
+		var y = 0;
 
+		if(espar())	x = (ultimoTweet)? ultimoTweet.x + myRand(MAX_X):myRand(MAX_X)
+		else x = (ultimoTweet)? ultimoTweet.x - myRand(MAX_X):myRand(MAX_X)
+
+		if(espar())	y = (ultimoTweet)? ultimoTweet.y + myRand(MAX_Y):myRand(MAX_Y);
+		else y = (ultimoTweet)? ultimoTweet.y - myRand(MAX_Y):myRand(MAX_Y);
+		oconf = {
+				'x': x,
+				'y': y,
+				'size': 10,
+				'image': tweet.profile_image_url,
+				'name': tweet.from_user,
+		};
+		tweets[nombre] = new Tweet(oconf);
+	}
+	
+	tweet = tweets[nombre];
+	tweet.efectoUltimo();
+	ultimoTweet = tweet;
+	
+	
+	
+	
+	var mover_x=0;
+	var mover_y=0;
+	
+	if(tweet.x > MAX_X/2){
+		mover_x =  -1 * (tweet.x - MAX_X/2);
+	}else{
+		mover_x = MAX_X/2 - tweet.x;
+	}
+	
+	if(tweet.y > MAX_Y/2){
+		mover_y = -1 *  (tweet.y - MAX_Y/2);
+	}else{
+		mover_y =  MAX_Y/2 - tweet.y;
+	}
+	
+	for(key in tweets){
+		tweet = tweets[key];
+		tweet.mover(mover_x, mover_y)
+	}
+	
+	
+	
+}
+
+
+function agregarTag(){
+		
 		var valor = document.getElementById('id_input_tags').value;
+		
 		valor = valor.trim();
 		if ( valor == '') return false;
 		document.getElementById('id_input_tags').value = '';
@@ -161,7 +268,7 @@ function agregarTag(){
 						'color': "#0095FF",
 						'name': nombre,
 				};
-				logear("oconf x: "+oconf.x);
+				//logear("oconf x: "+oconf.x);
 				tags[nombre] = new Tag(oconf);
 			}
 			
@@ -185,7 +292,7 @@ function agregarTag(){
 					mover_y =  MAX_Y/2 - tag.y;
 				}
 				
-				logear('mover_x: '+mover_x+' mover_y: '+mover_y);
+				//logear('mover_x: '+mover_x+' mover_y: '+mover_y);
 				
 				for(key in tags){
 					tag = tags[key];
@@ -197,7 +304,7 @@ function agregarTag(){
 				}
 
 			}catch(e){
-				logear("ERROR: "+e)
+				//logear("ERROR: "+e)
 			}
 		}
 		
@@ -218,14 +325,14 @@ function agregarTag(){
 						try{
 							relaciones[nombre1+"-"+nombre2] = new RelacionTag(rconf);
 						}catch(e){
-							console.log(e);
+							//console.log(e);
 						}
 					}
 				}
 			}
 		}
 		ultimoTag = tags[ nombres[nombres.length -1] ];
-		return false;
+		return;
 		
 }
 
@@ -233,14 +340,17 @@ function linea(x1,y1, x2, y2){
 	return paper.path("M"+x1+" "+y1+"L"+x2+" "+y2);
 }
 
-function dibujarPaper(){
+function dibujarPaper(max_X, max_Y){
 		
 		the_paper = document.getElementById('the_paper');
-		
-		MAX_X = $('#the_paper').css('width').split('px')[0]/1
-		MAX_Y = $('#the_paper').css('height').split('px')[0]/1
+		if(max_X && max_Y){
+			MAX_X = max_X;
+			MAX_Y = max_Y;
+		}else{
+			MAX_X = $('#the_paper').css('width').split('px')[0]/1
+			MAX_Y = $('#the_paper').css('height').split('px')[0]/1
+		}
 		paper = Raphael("the_paper", MAX_X, MAX_Y);
-		
 		
 		onkeydown = function(e){
 			mover = false;
@@ -285,33 +395,6 @@ function dibujarPaper(){
 				ANIMATION_SPEED = AUX_SPEED;
 			}
 		}//end onkeydown
-			
-		//paper.canvas.style.cssText = "background-color:#efefef;border:1px solid #cccccc;";
-		//paper.canvas.style.cssText = "background-color:#000000;";
-		
-		/*var p = paper.path("M10,50c0,50,80-50,80,0c0,50-80-50-80,0z");
-	    var path = p.getSubpath(10, 60);
-	    paper.path(path).attr({stroke: "#f00"});
-	    */
-		
-		/*
-		for(i=1; i<400; i+=10){
-			linea(0,i, i, 400);
-		}
-		*/
-		
-		/*
-		x = ['a','b','c'];
-		for (i=0; i < x.length; i++){
-			y = x[i];
-			for (j=0; j < x.length; j++){
-				y2 = x[j];
-				if (y != y2){
-					console.log(y+" => "+y2);
-				}
-			}
-		}
-		*/
 }
 
 
@@ -321,10 +404,11 @@ function dibujarPaper(){
 function logear(msg){
 	if (DEBUG){
 		var log = document.getElementById('log');
-		var p = document.createElement('p');
-		p.innerHTML = msg;
-		log.appendChild(p);
-		log.scrollByLines(10);
+		var d = document.createElement('div');
+		d.innerHTML = msg;
+		log.scrollByLines(200);
+		log.appendChild(d);
+		log.scrollByLines(200);
 	}
 	return;
 }

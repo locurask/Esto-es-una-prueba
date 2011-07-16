@@ -1,28 +1,29 @@
 {% extends "../base.html" %}
 
 	{% block extra_headers %}
-	
+		
 		<script src='/medios/js/gametag.js'></script>
+		<script src='/medios/js/spy.js'></script>
+		<script type="text/javascript" src="/medios/js/jsr_class.js"></script>
 		
 		<style type="text/css">
-			#hd{ display:none;}
-			#bd{ margin-top: 0px !important;
-			}
-			#doc{
-				width:100%;
-				height: 95%;
+			#show{
+				width:900px;
+				height: 450px;
+				display:none;
+				margin-top:10px;
 			}
 			
 			#the_paper{
-				width:80%;
-				height: 100%;			
+				width:600px;
+				height: 450px;			
 				float:left;
 				background: #efefef;
 			}
 			
 			#log{
-				width:20%;
-				height: 100%;
+				width:300px;
+				height: 450px;
 				float:right;
 				background-color: #ffffff;
 				overflow-y: scroll;
@@ -30,44 +31,144 @@
 			#log p{
 				border: 1px solid #cccccc;
 			}
-			#ft{
-				height: 5%;
-				background-color: #ffffff;
-			}			
-			#id_input_tags{
-				width:100%;
-				font-size:20px;
+			.tweet_img{
+				float:left;
 				border:1px solid #cccccc;
-				margin-top:4px;
+				position: relative;
 			}
+			.tweet{
+				float:left;
+				font-size:12px;
+				margin-left:5px;
+			}
+			.div_tweet{
+				border:1px solid #cccccc;
+				padding:5px;
+				margin:5px;
+			}
+			
+				
+			#id_input_tags{
+				width:500px;
+				font:normal 18px Arial,Sans-serif;
+				color:#555555;
+				border:1px solid #cccccc;
+				padding:5px;
+			}
+			
+			#form_content{
+				text-align: center;
+			}
+			
+			
 		</style>
 		
 	{% endblock %}
 	
 	
 	
-	{% block body %}
+	{% block content %}
 	
 	
-	<div id="doc">
-		<div id="the_paper">
+		<h1>Busque Tweets que contenga:</h1>
+		
+		<div id="form_content"> 
+			<form onsubmit="return iniciar_busqueda();">
+				<input type="text" name="input_tags" id="id_input_tags">
+				<input id="boton_start" type="submit" value="Buscar" class="btn-big">
+				<a id="boton_stop" href="javascript:void()" onclick="return stop_busqueda()" class="btn-big" style="display:none;">Parar busqueda</a> 
+			</form>
 		</div>
-		<div id="log">
+		
+		
+		<div id="show">
+			<div id="the_paper"></div>
+			<div id="log">
+			<ul id="ul_spy" class="spy">
+				<li></li>
+			</ul>
+			</div>
 		</div>
-	</div>
-	<div id="ft">
-	<form onsubmit="return agregarTag();">
-		<input type="text" name="input_tags" id="id_input_tags">
-	</form>
-	</div>
+		
+		
 	
 	<script type="text/javascript">
-	
+
+		var refresh_url = false;
+		var clock;
+		var rpp = 100;
+		var results;
+		var actual_index = 0;
+		var TIME_OUT = 3000;
+		var query = "";
+		var stop = false;
+		var timer;
+		
+		function stop_busqueda(){
+			clearTimeout(timer);
+			$("#show").slideToggle('slow', function(){
+				$("#boton_stop").hide()
+				$("#boton_start").show();
+			});
+			document.getElementById('ul_spy').innerHTML = '';
+			
+		}
+		function iniciar_busqueda(){
+			query = document.getElementById('id_input_tags').value;
+			document.getElementById('id_input_tags').value = '';
+			
+			$("#show").slideToggle('slow', function(){
+				$("#boton_start").hide();
+				$("#boton_stop").show();
+			});
+			
+			
+			dibujarPaper(900,450);
+			updateTweets();
+			return false;
+		}
+
+		function showTweets(){
+
+			if (results.length > 0 && actual_index < results.length){
+				tweet = results[actual_index];
+				actual_index++;
+				agregarTweet(tweet);
+				html = "<div class='div_tweet'><table><tr><td valign='top'> <img class='tweet_img' src='"+tweet.profile_image_url+"' alt='img'></td><td><div class='tweet'>"+tweet.text+"</div></td></tr></table></div>";
+				$('ul.spy').children(':first').before(html);
+				timer = setTimeout(showTweets,TIME_OUT);
+			}else{
+				updateTweets();
+			}
+			
+		}
+		function myCallbackfunc(jsonData) {
+			
+			results = jsonData.results;
+			refresh_url = jsonData.refresh_url;
+			timer = setTimeout(showTweets,1000);
+			
+		}
+
+		function updateTweets(){
+			actual_index = 0;
+			if (refresh_url){
+				var req  = 'http://search.twitter.com/search.json'+refresh_url+'&callback=myCallbackfunc&lang=es&rpp='+rpp;
+			}else{
+				var req  = 'http://search.twitter.com/search.json?q='+query+'&callback=myCallbackfunc&lang=es&rpp='+rpp;
+			}
+			aObj = new JSONscriptRequest(req);
+			aObj.buildScriptTag();
+			aObj.addScriptTag();
+			
+		}
 		$(document).ready(function(){
 			var it = document.getElementById('id_input_tags');
 			it.focus();
-			init_gametag();
+			//init_gametag();
+			//updateTweets();
 		});
+		
 
 	</script>
 	
